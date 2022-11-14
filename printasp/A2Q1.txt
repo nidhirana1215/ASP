@@ -1,0 +1,245 @@
+A2Q1:-- 
+
+
+
+_______________________________________________________________
+
+reg.aspx.cs:------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+
+public partial class _Default : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        SqlConnection cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        SqlCommand cmd;
+        SqlDataReader dr;
+        string name = Session["name"].ToString();
+        cn.Open();
+        string qry = "select * from register where id=" + name;
+        cmd = new SqlCommand(qry, cn);
+        dr = cmd.ExecuteReader();
+        if(dr.HasRows)
+        {
+            dr.Read();
+            lblname.Text = dr["name"].ToString();
+            lblemail.Text = dr["email"].ToString();
+            lblage.Text = dr["age"].ToString();
+            lblmob.Text = dr["contact"].ToString();
+            if(dr["photo"].ToString()=="")
+            {
+                FileUpload1.Visible = true;
+                FileUpload1.Enabled = true;
+                btnadd.Visible = true;
+                Image1.Visible = false;
+            }
+            else
+            {
+                btnadd.Visible = false;
+                FileUpload1.Visible = false;
+                FileUpload1.Enabled = false;
+                Image1.Visible = true;
+                Image1.ImageUrl = "doc/" + dr["photo"].ToString();
+                Response.Redirect("home.aspx");
+            }
+        }
+        cn.Close();
+    }
+
+    protected void btnadd_Click(object sender, EventArgs e)
+    {
+        SqlConnection cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        SqlCommand cmd;
+        cn.Open();
+        int name = Convert.ToInt32(Session["name"]);
+        try
+        {
+            if (FileUpload1.HasFile)
+            {
+                string ext = System.IO.Path.GetExtension(FileUpload1.FileName);
+                if (ext == ".jpeg" || ext == ".jpg" || ext == ".png")
+                {
+                    string path = Server.MapPath("doc\\");
+                    string fname = path + FileUpload1.FileName;
+                    FileUpload1.SaveAs(fname);
+
+                    string qry = "update register set photo='" + FileUpload1.FileName + "' where id=" +name+ "";
+                    cmd = new SqlCommand(qry, cn);
+                    cmd.ExecuteNonQuery();
+                    
+                    Response.Redirect("home.aspx");
+                }
+                else
+                {
+                    Response.Write("please select valid file ");
+                }
+            }
+            else
+            {
+                Response.Write("file not uploaded");
+            }
+        }
+        catch (Exception ex)
+        {
+            Response.Write(ex.Message);
+        }
+        cn.Close();
+    }
+}
+
+
+login.aspx.cs:-------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+ 
+public partial class _Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    SqlDataReader dr;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+    }
+
+    protected void btn_submit_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        string name = txtname.Text;
+        string pass = txtpass.Text;
+        string qry = "select * from register where name ='" + name + "'and password='" + pass + "'";
+        cmd = new SqlCommand(qry, cn);
+        dr= cmd.ExecuteReader();
+        if(dr.HasRows)
+        {
+            dr.Read();
+            string id = dr[0].ToString();
+            Session["name"] = id;
+            Response.Redirect("home.aspx");
+        }
+        else
+        {
+            Response.Write("<script>alert('Invalid UserName And Password!!')</script>");
+        }
+        cn.Close();
+
+    }
+
+    protected void txtchange_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        string name = txtname.Text;
+        string pass = txtcpass.Text;
+        string qry = "update register set password='" + pass + "' where name='" + name + "'";
+        cmd = new SqlCommand(qry, cn);
+        cmd.ExecuteNonQuery();
+        Response.Write("<script>alert('Recorde Updated!!!')</script>");
+        cn.Close();
+    }
+}
+
+
+
+home.aspx.cs:----------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+
+public partial class _Default : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        SqlConnection cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        SqlCommand cmd;
+        SqlDataReader dr;
+        string name = Session["name"].ToString();
+        cn.Open();
+        string qry = "select * from register where id=" + name;
+        cmd = new SqlCommand(qry, cn);
+        dr = cmd.ExecuteReader();
+        if(dr.HasRows)
+        {
+            dr.Read();
+            lblname.Text = dr["name"].ToString();
+            lblemail.Text = dr["email"].ToString();
+            lblage.Text = dr["age"].ToString();
+            lblmob.Text = dr["contact"].ToString();
+            if(dr["photo"].ToString()=="")
+            {
+                FileUpload1.Visible = true;
+                FileUpload1.Enabled = true;
+                btnadd.Visible = true;
+                Image1.Visible = false;
+            }
+            else
+            {
+                btnadd.Visible = false;
+                FileUpload1.Visible = false;
+                FileUpload1.Enabled = false;
+                Image1.Visible = true;
+                Image1.ImageUrl = "doc/" + dr["photo"].ToString();
+                Response.Redirect("home.aspx");
+            }
+        }
+        cn.Close();
+    }
+
+    protected void btnadd_Click(object sender, EventArgs e)
+    {
+        SqlConnection cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        SqlCommand cmd;
+        cn.Open();
+        int name = Convert.ToInt32(Session["name"]);
+        try
+        {
+            if (FileUpload1.HasFile)
+            {
+                string ext = System.IO.Path.GetExtension(FileUpload1.FileName);
+                if (ext == ".jpeg" || ext == ".jpg" || ext == ".png")
+                {
+                    string path = Server.MapPath("doc\\");
+                    string fname = path + FileUpload1.FileName;
+                    FileUpload1.SaveAs(fname);
+
+                    string qry = "update register set photo='" + FileUpload1.FileName + "' where id=" +name+ "";
+                    cmd = new SqlCommand(qry, cn);
+                    cmd.ExecuteNonQuery();
+                    
+                    Response.Redirect("home.aspx");
+                }
+                else
+                {
+                    Response.Write("please select valid file ");
+                }
+            }
+            else
+            {
+                Response.Write("file not uploaded");
+            }
+        }
+        catch (Exception ex)
+        {
+            Response.Write(ex.Message);
+        }
+        cn.Close();
+    }
+}

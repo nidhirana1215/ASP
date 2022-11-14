@@ -1,0 +1,542 @@
+A2Q5:--
+
+
+_______________________________________________________________
+
+
+login.aspx.cs:--------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class login : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    SqlDataReader dr;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+
+    }
+
+    protected void btn_submit_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        string email = txtemail.Text;
+        string pass = txtpass.Text;
+        
+        string qry = "select * from reg where email ='" + email + "'and password='" + pass + "'";
+        cmd = new SqlCommand(qry, cn);
+        dr = cmd.ExecuteReader();
+        if (dr.HasRows)
+        {
+            dr.Read();
+            if(email=="admin@gmail.com" && pass=="admin123")
+            {
+                Response.Redirect("./ADMIN/SearchbyID.aspx");
+            }
+            {
+
+            string id = dr[0].ToString();
+            Session["name"] = id;
+            Response.Redirect("./USER/uhome.aspx");
+            }
+        }
+        else
+        {
+            Response.Write("<script>alert('Invalid UserName And Password!!')</script>");
+        }
+        cn.Close();
+    }
+}
+
+
+SignUp.aspx.cs:-------------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+
+public partial class SignUp : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+    }
+
+    protected void btnSubmit_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        string name = txtUname.Text;
+        string email = txtemail.Text;
+        string pass = txtpass.Text;
+        DateTime date = Convert.ToDateTime(txtdate.Text);
+        string desg = txtdesg.Text;
+        string role = txtrole.Text;
+        string city = txtCity.Text;
+
+        if (FileUpload1.HasFile)
+        {
+            string ext = System.IO.Path.GetExtension(FileUpload1.FileName);
+            if (ext == ".jpeg" || ext == ".jpg" || ext == ".png")
+            {
+                string path = Server.MapPath("doc\\");
+                string fname = path + FileUpload1.FileName;
+                FileUpload1.SaveAs(fname);
+
+            
+            }
+            else
+            {
+                Response.Write("please select valid file ");
+            }
+        }
+        else
+        {
+            Response.Write("file not uploaded");
+        }
+        string qry = "insert into reg values('" + name + "','" + email + "','" + pass + "','" + date + "','" + desg + "','" + FileUpload1.FileName + "','" + role + "','" + city + "',null)";
+        cmd = new SqlCommand(qry, cn);
+        cmd.ExecuteNonQuery();
+        Response.Write("<script>alert('inserted....')</script>");
+        cn.Close();
+    }
+
+}
+
+ADDMember.aspx.cs:--------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class USER_Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+
+    }
+
+    protected void btnsignup_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        string id = Session["name"].ToString();
+
+        string name = txtUname.Text;
+        string email = txtemail.Text;
+        string pass = txtpass.Text;
+        DateTime date = Convert.ToDateTime(txtdate.Text);
+        string desg = txtdesg.Text;
+        string role = txtrole.Text;
+        string city = txtCity.Text;
+
+        if (FileUpload1.HasFile)
+        {
+            string ext = System.IO.Path.GetExtension(FileUpload1.FileName);
+            if (ext == ".jpeg" || ext == ".jpg" || ext == ".png")
+            {
+                string path = Server.MapPath("~/doc\\");
+                string fname = path + FileUpload1.FileName;
+                FileUpload1.SaveAs(fname);
+
+
+            }
+            else
+            {
+                Response.Write("please select valid file ");
+            }
+        }
+        else
+        {
+            Response.Write("file not uploaded");
+        }
+        string qry = "insert into reg values('" + name + "','" + email + "','" + pass + "','" + date + "','" + desg + "','" + FileUpload1.FileName + "','" + role + "','" + city + "','" + id + "')";
+        cmd = new SqlCommand(qry, cn);
+        cmd.ExecuteNonQuery();
+        Response.Write("<script>alert('inserted....')</script>");
+        cn.Close();
+    }
+}
+
+
+mamber.aspx.cs:-------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.Data.SqlClient;
+
+public partial class USER_Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string id = Session["name"].ToString();
+
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        string qry = "select * from reg where refid='" + id + "'";
+        SqlDataAdapter ad = new SqlDataAdapter(qry, cn);
+        DataTable dt = new DataTable();
+        ad.Fill(dt);
+        GridView1.DataSource = dt;
+        GridView1.DataBind();
+    }
+}
+
+
+uhome:-------------------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class USER_Default : System.Web.UI.Page
+{
+
+    SqlConnection cn;
+    SqlCommand cmd;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        SqlCommand cmd;
+
+       string name = Session["name"].ToString();
+        cn.Open();
+        string qry = "select * from reg where id=" + name;
+        cmd = new SqlCommand(qry, cn);
+        SqlDataReader dr = cmd.ExecuteReader();
+        if (dr.HasRows)
+        {
+            dr.Read();
+            lblname.Text = dr["name"].ToString();
+            lblemail.Text = dr["email"].ToString();
+            lbldoj.Text = dr["doj"].ToString();
+            lbldesg.Text = dr["desg"].ToString();
+            lblrole.Text = dr["role"].ToString();
+            lblcity.Text = dr["city"].ToString();
+            lblrefid.Text = dr["refid"].ToString();
+            if (dr["profile"].ToString() == "")
+            {
+                FileUpload1.Visible = true;
+                FileUpload1.Enabled = true;
+                btnadd.Visible = true;
+                Image1.Visible = false;
+            }
+            else
+            {
+                btnadd.Visible = false;
+                FileUpload1.Visible = false;
+                FileUpload1.Enabled = false;
+                Image1.Visible = true;
+                Image1.ImageUrl = "doc/" + dr["profile"].ToString();
+                //Response.Redirect("./uhome.aspx");
+            }
+        }
+        cn.Close();
+    }
+
+    protected void btnadd_Click(object sender, EventArgs e)
+    {
+        SqlCommand cmd;
+        cn.Open();
+        int name = Convert.ToInt32(Session["name"]);
+        try
+        {
+            if (FileUpload1.HasFile)
+            {
+                string ext = System.IO.Path.GetExtension(FileUpload1.FileName);
+                if (ext == ".jpeg" || ext == ".jpg" || ext == ".png")
+                {
+                    string path = Server.MapPath("doc\\");
+                    string fname = path + FileUpload1.FileName;
+                    FileUpload1.SaveAs(fname);
+
+                    string qry = "update reg set profile='" + FileUpload1.FileName + "' where id=" + name + "";
+                    cmd = new SqlCommand(qry, cn);
+                    cmd.ExecuteNonQuery();
+
+                    Response.Redirect("./USER/uhome.aspx");
+                }
+                else
+                {
+                    Response.Write("please select valid file ");
+                }
+            }
+            else
+            {
+                Response.Write("file not uploaded");
+            }
+        }
+        catch (Exception ex)
+        {
+            Response.Write(ex.Message);
+        }
+        cn.Close();
+    }
+
+    protected void btnchangepass_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+
+        string pass = txtcpass.Text;
+        string email = lblemail.Text;
+        string qry = "update reg set password='" + pass + "' where email='" + email + "'";
+        cmd = new SqlCommand(qry, cn);
+        cmd.ExecuteNonQuery();
+        Response.Write("<script>alert('recoed updated..')</script>");
+        cn.Close();
+    }
+
+    protected void btnedit_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        string id = Session["name"].ToString();
+        
+        string name = txtUname.Text;
+        string email = txtemail.Text;
+        string city = txtCity.Text;
+        string qry = "update reg set name='" + name+"',email='"+email+"',city='"+city+ "' where id='" + id+ "'";
+        cmd = new SqlCommand(qry, cn);
+        cmd.ExecuteNonQuery();
+        Response.Write("<script>alert('recoed updated..')</script>");
+        cn.Close();
+    }
+}
+
+
+listnomamber.aspx.cs:--------------------------------------------------
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+
+public partial class ADMIN_Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        cn.Open();
+        //string refi = "NULL";
+        string qry = "select * from reg where refid is NULL";
+        SqlDataAdapter ad = new SqlDataAdapter(qry, cn);
+        DataTable dt = new DataTable();
+        ad.Fill(dt);
+        GridView1.DataSource = dt;
+        GridView1.DataBind();
+        cn.Close();
+        
+    }
+}
+
+nochild.aspx.cs:-----------------------------------------------------------
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+
+public partial class ADMIN_Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        cn.Open();
+        string qry = "select * from reg where refid is not NULL";
+        SqlDataAdapter ad = new SqlDataAdapter(qry, cn);
+        DataTable dt = new DataTable();
+        ad.Fill(dt);
+        GridView1.DataSource = dt;
+        GridView1.DataBind();
+        cn.Close();
+    }
+}
+
+
+
+searchbycity.aspx.cs:---------------------------------------------
+
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class ADMIN_Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+
+    }
+
+    protected void txtid_TextChanged(object sender, EventArgs e)
+    {
+        cn.Open();
+        string city = txtcity.Text;
+        string qry = "select * from reg where city ='" + city+"'";
+        SqlDataAdapter ad = new SqlDataAdapter(qry, cn);
+        DataTable dt = new DataTable();
+        ad.Fill(dt);
+        GridView1.DataSource = dt;
+        GridView1.DataBind();
+
+        cn.Close();
+    }
+}
+
+searchbydate.aspx.cs:----------------------------------------------
+
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class ADMIN_Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+
+    }
+
+    protected void btntoday_Click(object sender, EventArgs e)
+    {
+        DateTime today = DateTime.Today;
+        //Response.Write(today);
+        string qry = "select * from reg where doj='" + today + "'";
+        SqlDataAdapter ad = new SqlDataAdapter(qry, cn);
+        DataTable dt = new DataTable();
+        ad.Fill(dt);
+        GridView1.DataSource = dt;
+        GridView1.DataBind();
+    }
+
+    protected void btnweek_Click(object sender, EventArgs e)
+    {
+        DateTime crt = DateTime.Now;
+        int dat = DayOfWeek.Monday - DateTime.Now.DayOfWeek;
+
+        DateTime wstart = crt.AddDays(dat);
+        DateTime wend = crt.AddDays(7);
+
+        string qry = "select * from reg where doj between'" + wstart + "'and'" + wend + "'";
+        SqlDataAdapter ad = new SqlDataAdapter(qry, cn);
+        DataTable dt = new DataTable();
+        ad.Fill(dt);
+        GridView1.DataSource = dt;
+        GridView1.DataBind();
+    }
+
+    protected void btnmonth_Click(object sender, EventArgs e)
+    {
+        DateTime crt = DateTime.Now;
+        DateTime months = new DateTime(crt.Year, crt.Month, 1);
+        //DateTime monthe = crt.AddMonths(1).AddDays(-2);
+        DateTime monthe = new DateTime(crt.Year, crt.Month, 30);
+        
+        string qry = "select * from reg where doj between'"+months+"'and'"+monthe+"'";
+        SqlDataAdapter ad = new SqlDataAdapter(qry, cn);
+        DataTable dt = new DataTable();
+        ad.Fill(dt);
+        GridView1.DataSource = dt;
+        GridView1.DataBind();
+         //DateTime date = Convert.ToDateTime()
+    }
+}
+
+
+SearchbyID.aspx.cs:-------------------------------------------------
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+
+public partial class ADMIN_Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+
+    }
+
+    protected void txtid_TextChanged(object sender, EventArgs e)
+    {
+        cn.Open();
+        int id = int.Parse(txtid.Text);
+        string qry = "select * from reg where id =" + id;
+        SqlDataAdapter ad = new SqlDataAdapter(qry, cn);
+        DataTable dt = new DataTable();
+        ad.Fill(dt);
+        GridView1.DataSource = dt;
+        GridView1.DataBind();
+
+        cn.Close(); 
+    }
+}

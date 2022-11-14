@@ -1,0 +1,208 @@
+A2Q3:--
+
+
+
+_______________________________________________________________
+
+
+employee.aspx.cs:-----------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+
+public partial class _Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        
+    }
+
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        string name = txtname.Text;
+        string date = Convert.ToDateTime(txtdate.Text).ToShortDateString();
+        int desg =Convert.ToInt32( dbdesg.SelectedValue);
+        int dept =Convert.ToInt32( dbdept.SelectedValue);
+        int sal = Convert.ToInt32(txtsalary.Text);
+        string ext,path,fname;
+        if (FileUpload1.HasFile)
+        {
+            ext = System.IO.Path.GetExtension(FileUpload1.FileName);
+            if (ext == ".pdf")
+            {
+                path = Server.MapPath("doc\\");
+                fname = path + FileUpload1.FileName;
+                FileUpload1.SaveAs(fname);
+            }
+            else
+            {
+                Response.Write("please select Only Pdf ");
+            }
+        }
+        else
+        {
+            Response.Write("file not uploaded");
+        }
+
+        string qry = "insert into emp(name,dob,designation,dept,salary,cv) values('" + name + "','" + date + "','" + desg + "','" + dept + "'," + sal + ",'" + FileUpload1.FileName + "')";
+        cmd = new SqlCommand(qry, cn);
+        cmd.ExecuteNonQuery();
+        Response.Write("<script>alert('Record Inserted...')</script>");
+        cn.Close();
+    }   
+}
+
+updelser.aspx.cs:--------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+
+public partial class _Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+
+    }
+
+    protected void btn_search_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        int eno = Convert.ToInt32(txteno.Text);
+
+        string qry = "select * from emp where eno=" + eno;
+        cmd = new SqlCommand(qry, cn);
+        SqlDataReader dr = cmd.ExecuteReader();
+        if(dr.HasRows)
+        {
+            dr.Read();
+            txtsal.Text = dr["salary"].ToString();
+            dbdesg.Text = dr["designation"].ToString();
+            dbdept.Text = dr["dept"].ToString();
+        }
+        else
+        {
+            Response.Write("<script>alert('No Record...')</script>");
+
+        }
+        cn.Close();
+    }
+
+    protected void btnupdate_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        int sal = Convert.ToInt32(txtsal.Text);
+        int desg = Convert.ToInt32(dbdesg.SelectedValue);
+        int dept = Convert.ToInt32(dbdept.SelectedValue);
+
+        string qry = "update emp set salary=" + sal + ",designation=" + desg + ",dept=" + dept+" where eno="+txteno.Text;
+        cmd = new SqlCommand(qry, cn);
+        cmd.ExecuteNonQuery();
+        Response.Write("<script>alert('Record Updated...')</script>");
+        cn.Close();
+    }
+
+    protected void btnserachsal_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        int sal = Convert.ToInt32(txtsal.Text);
+
+        string qry = "select * from emp where salary>=" + sal+" and designation=" +Convert.ToInt32(dbdesg.SelectedValue);
+        cmd = new SqlCommand(qry, cn);
+        SqlDataReader dr= cmd.ExecuteReader();
+        if(dr.HasRows)
+        {
+
+        GridView1.DataSource = dr;
+        GridView1.DataBind();
+        cn.Close();
+        }
+        else
+        {
+            Response.Write("<script>alert('No Record...')</script>");
+
+        }
+    }
+
+    protected void btndelete_Click(object sender, EventArgs e)
+    {
+        cn.Open();
+        int eno = Convert.ToInt32(txteno.Text);
+
+        DateTime now = DateTime.Now.Date;
+        string date = now.ToString("dd/MM/yyyy");
+
+        DateTime cdob = Convert.ToDateTime(txtdob.Text);
+        string dob = cdob.ToString("dd/MM/yyyy");
+
+        TimeSpan a = now.Subtract(cdob);
+
+        if (a.TotalDays > 21170)
+        {
+            string qry = "delete from emp where dob='"+dob+"'";
+            cmd = new SqlCommand(qry, cn);
+            cmd.ExecuteNonQuery();
+            Response.Write("<script>alert('Record Deleted....')</script>");
+
+        }
+        else
+        {
+
+        Response.Write("<script>alert('Age Must Be Above 58')</script>");
+        }
+
+        cn.Close();
+
+    }
+}
+
+
+Displayrec.aspx.cs:------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+
+public partial class _Default : System.Web.UI.Page
+{
+    SqlConnection cn;
+    SqlCommand cmd;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        cn = new SqlConnection("Data Source=DESKTOP-7HVSF4V;Initial Catalog=assi2;User ID=sa;Password=sa123");
+        cn.Open();
+        string qry = "select * from emp";
+        DataTable dt = new DataTable();
+        SqlDataAdapter da = new SqlDataAdapter(qry, cn);
+        da.Fill(dt);
+        rp1.DataSource = dt;
+        rp1.DataBind();
+        cn.Close();
+
+    }
+}

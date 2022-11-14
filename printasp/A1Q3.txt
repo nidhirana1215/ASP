@@ -1,0 +1,125 @@
+A1Q3:--Create a web application where user can enter the hobby in text box and display in
+list box on click of next go to next page and display all added hobbies of first page
+as checkboxes and let user select few on click of submit take to third page and
+display selected hobbies of second page.
+_______________________________________________________________
+
+
+Q3.aspx.cs:--------------------------------------
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Q3 : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+        int len = ListBox1.Items.Count;
+        List<string> hobbies = new List<string>();
+
+        for (int i = 0; i < len; i++)
+        {
+            hobbies.Add(ListBox1.Items[i].ToString());
+
+        }
+
+        string Hobbies = String.Join(",", hobbies);
+
+        Response.Cookies["HOBBY"].Value = Hobbies;
+        Response.Redirect("Q3_1.aspx");
+    }
+
+    protected void Button2_Click(object sender, EventArgs e)
+    {
+
+        string str = TextBox1.Text;
+        ListBox1.Items.Add(str);
+    }
+}
+
+Q3_1.aspx.cs:--------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class _Default : System.Web.UI.Page
+
+{
+    int c;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (IsPostBack) { }
+        else
+        {
+            string[] hobbies = Request.Cookies["HOBBY"].Value.Split(',');
+            c = hobbies.Length;
+
+            for(int i = 0; i < c; i++)
+            {
+                CheckBoxList1.Items.Add(hobbies[i]);
+            }
+        }
+    }
+
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+
+        List<string> hobbies = new List<string>();
+
+        for ( int i = 0; i < CheckBoxList1.Items.Count; i++ )
+        {
+            if (CheckBoxList1.Items[i].Selected)
+            {
+                hobbies.Add(CheckBoxList1.Items[i].ToString());
+
+            }
+        }
+
+        string Hobbies = String.Join(",", hobbies);
+        Response.Cookies["HOBBY1"].Value = Hobbies;
+        Response.Redirect("Q3_2.aspx");
+    }
+}
+
+
+Q3_2.aspx.cs:-------------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Q3_2 : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        String hobbies = Request.Cookies["HOBBY1"].Value;
+        string[] Hobby = hobbies.Split(',');
+
+        for( int i = 0; i < Hobby.Length; i++)
+        {
+            Label l1 = new Label();
+            l1.Text = Hobby[i] + "<br>";
+            form1.Controls.Add(l1);
+                 
+        }
+    }
+}
+

@@ -1,0 +1,170 @@
+A2Q4:--
+
+
+_______________________________________________________________
+
+
+employee.aspx.cs:-------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class _Default : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    DataClassesDataContext cd = new DataClassesDataContext();
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        string name = txtname.Text;
+        string date = Convert.ToDateTime(txtdate.Text).ToShortDateString();
+        int desg = Convert.ToInt32(dbdesg.SelectedValue);
+        int dept = Convert.ToInt32(dbdept.SelectedValue);
+        int sal = Convert.ToInt32(txtsalary.Text);
+        string ext, path, fname;
+        if (FileUpload1.HasFile)
+        {
+            ext = System.IO.Path.GetExtension(FileUpload1.FileName);
+            if (ext == ".pdf")
+            {
+                path = Server.MapPath("doc\\");
+                fname = path + FileUpload1.FileName;
+                FileUpload1.SaveAs(fname);
+            }
+            else
+            {
+                Response.Write("please select Only Pdf ");
+            }
+        }
+        else
+        {
+            Response.Write("file not uploaded");
+        }
+
+        var data = new emp
+        {
+            name=name,dob=date,designation=desg,dept=dept,salary=sal,cv=FileUpload1.FileName
+        };
+        cd.emps.InsertOnSubmit(data);
+        cd.SubmitChanges();
+        Response.Write("<script>alert('Record Inserted...')</script>");
+
+    }
+}
+
+
+
+
+updelser.aspx.cs:---------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class _Default : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    DataClassesDataContext cd = new DataClassesDataContext();
+
+    protected void btn_search_Click(object sender, EventArgs e)
+    {
+        int eno = Convert.ToInt32(txteno.Text);
+        var qry = (from s in cd.emps where s.eno == eno select s).First();
+        
+        txtsal.Text = qry.salary.ToString();
+        dbdesg.Text = qry.designation.ToString();
+        dbdept.Text = qry.dept.ToString();
+        
+    }
+
+    protected void btnupdate_Click(object sender, EventArgs e)
+    {
+        int eno = Convert.ToInt32(txteno.Text);
+
+        int sal = Convert.ToInt32(txtsal.Text);
+        int desg = Convert.ToInt32(dbdesg.SelectedValue);
+        int dept = Convert.ToInt32(dbdept.SelectedValue);
+
+        var qry = (from s in cd.emps where s.eno == eno select s).First();
+        qry.salary = sal;
+        qry.designation = desg;
+        qry.dept = dept;
+
+        cd.SubmitChanges();
+        Response.Write("<script>alert('Record Updated...')</script>");
+
+    }
+
+    protected void btnserachsal_Click(object sender, EventArgs e)
+    {
+        int sal = Convert.ToInt32(txtsal.Text);
+        int desg = Convert.ToInt32(dbdesg.SelectedValue);
+        var qry = (from s in cd.emps where s.salary > sal || s.designation == desg select s);
+
+        GridView1.DataSource = qry;
+        GridView1.DataBind();
+    }
+
+    protected void btndelete_Click(object sender, EventArgs e)
+    {
+
+        DateTime now = DateTime.Now.Date;
+        string date = now.ToString("dd/MM/yyyy");
+
+        DateTime cdob = Convert.ToDateTime(txtdob.Text);
+        string dob = cdob.ToString("dd/MM/yyyy");
+
+        TimeSpan a = now.Subtract(cdob);
+        if (a.TotalDays > 21170)
+        {
+            var qry = (from s in cd.emps where s.dob == dob select s).First();
+            cd.emps.DeleteOnSubmit(qry);
+            cd.SubmitChanges();
+            Response.Write("<script>alert('Record Deleted....')</script>");
+
+        }
+        else
+        {
+
+            Response.Write("<script>alert('Age Must Be Above 58')</script>");
+        }
+    }
+}
+
+
+Displayrec.aspx.cs:-----------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Data;
+public partial class _Default : System.Web.UI.Page
+{
+    
+    DataClassesDataContext cd = new DataClassesDataContext();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+        var qry = (from s in cd.emps select s);
+        rp1.DataSource = qry.ToList();
+        rp1.DataBind();
+
+    }
+}
